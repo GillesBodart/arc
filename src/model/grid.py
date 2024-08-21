@@ -40,12 +40,27 @@ class Grid(object):
                 for col in range(self.shape[1]):
                     new_grid[row + other.shape[0]][col] = self._grid[row][col]
         if direction == AppendDirection.DOWN:
-            for row in range(other.shape[0]):
-                for col in range(other.shape[1]):
-                    new_grid[row][col] = self._grid[row][col]
             for row in range(self.shape[0]):
                 for col in range(self.shape[1]):
+                    new_grid[row][col] = self._grid[row][col]
+            for row in range(other.shape[0]):
+                for col in range(other.shape[1]):
                     new_grid[row + other.shape[0]][col] = other._grid[row][col]
+        if direction == AppendDirection.RIGHT:
+            for row in range(self.shape[0]):
+                for col in range(self.shape[1]):
+                    new_grid[row][col] = self._grid[row][col]
+            for row in range(other.shape[0]):
+                for col in range(other.shape[1]):
+                    new_grid[row][col + other.shape[1]] = other._grid[row][col]
+        if direction == AppendDirection.LEFT:
+            for row in range(other.shape[0]):
+                for col in range(other.shape[1]):
+                    new_grid[row][col] = other._grid[row][col]
+            for row in range(self.shape[0]):
+                for col in range(self.shape[1]):
+                    new_grid[row][col + other.shape[1]] = self._grid[row][col]
+
         return Grid(new_grid)
 
     def __sub__(self, other):
