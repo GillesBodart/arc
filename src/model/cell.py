@@ -12,6 +12,7 @@ class Cell(object):
         self.pos = (x, y)
         self.color = color
         self._neighbors = None
+        self._depth = None
 
     def set_color(self, color):
         self.color = color
@@ -23,23 +24,21 @@ class Cell(object):
         return self.x == other.x and self.y == other.y and self.color == other.color
 
     def set_neighbors(self, depth=1):
-        self._neighbors = [[None for i in range(3 + (depth - 1) * 2)] for j in range(3 + (depth - 1) * 2)]
-        for i in range(3 + (depth - 1) * 2):
-            for j in range(3 + (depth - 1) * 2):
-                self._neighbors[i][j] = self.grid.get_cell(self.x - i, self.y - j)
-            self._neighbors[0][0] = self.grid.get_cell(self.x - depth, self.y - depth)
-            self._neighbors[0][1] = self.grid.get_cell(self.x - depth, self.y)
-            self._neighbors[0][2] = self.grid.get_cell(self.x - depth, self.y + depth)
-            self._neighbors[1][0] = self.grid.get_cell(self.x, self.y - depth)
-            self._neighbors[1][1] = self.grid.get_cell(self.x, self.y)
-            self._neighbors[1][2] = self.grid.get_cell(self.x, self.y + depth)
-            self._neighbors[2][0] = self.grid.get_cell(self.x + depth, self.y - depth)
-            self._neighbors[2][1] = self.grid.get_cell(self.x + depth, self.y)
-            self._neighbors[2][2] = self.grid.get_cell(self.x + depth, self.y + depth)
+        size = 3 + (depth - 1) * 2
+        self._neighbors = [[None for i in range(size)] for j in range(size)]
+        x_i = 0
+        y_i = 0
+        for i in [ int(i - (size -1)/2) for i in range(size) ]:
+            for j in [ int(i - (size -1)/2) for i in range(size) ]:
+                self._neighbors[x_i][y_i] = self.grid.get_cell(self.x + i, self.y + j)
+                y_i +=1
+            x_i += 1
+            y_i = 0
 
-    def _init_neighbors(self):
-        if self._neighbors is None:
-            self.set_neighbors()
+    def _init_neighbors(self, depth=1):
+        if self._neighbors is None or self._depth != depth:
+            self.depth = depth
+            self.set_neighbors(depth)
 
     def get_neighbor(self, x, y):
         self._init_neighbors()
@@ -53,12 +52,13 @@ class Cell(object):
         self._init_neighbors()
         return [cell for row in self._neighbors for cell in row if cell is not None and self.color == cell.color]
 
-    def get_color_neighbors_matrix(self):
-        self._init_neighbors()
-        return [[cell.color if cell is not None else 0 for cell in row] for row in self.get_color_neighbors()]
+    def get_color_neighbors_matrix(self, depth=1):
+        self._init_neighbors(depth)
+        neigh = [[cell if cell is not None and self.color == cell.color else None for cell in row] for row in self._neighbors]
+        return [[cell.color if cell is not None else 0 for cell in row] for row in neigh]
 
-    def get_neighbors_matrix(self):
-        self._init_neighbors()
+    def get_neighbors_matrix(self, depth=1):
+        self._init_neighbors(depth)
         return [[cell.color if cell is not None else 0 for cell in row] for row in self._neighbors]
 
     def touch(self, other):
